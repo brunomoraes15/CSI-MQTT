@@ -1,7 +1,7 @@
 from sshtunnel import SSHTunnelForwarder
 from dotenv import load_dotenv
-from config import *
 import time, sys, os
+from general.logging import logger
 
 # Autenticação por senha. Trocar para chave ssh posteriomente
 class SSH_Connection:
@@ -13,62 +13,60 @@ class SSH_Connection:
         self.local_port = local_port
         self.tunnel = None
         self.default_port = 22
-    
+
     def start_tunnel(self):
         try:
             self.tunnel = SSHTunnelForwarder(
                 (self.server_ip, self.default_port),
-                ssh_username = self.ssh_user,
-                ssh_password = self.ssh_password,
+                ssh_username=self.ssh_user,
+                ssh_password=self.ssh_password,
                 remote_bind_address=('127.0.0.1', self.remote_port),
                 local_bind_address=('127.0.0.1', self.local_port),
             )
             self.tunnel.start()
-            print(f"{msg_ok} SSH tunnel established: localhost:{self.local_port} → {self.server_ip}:{self.remote_port}")
-
+            logger.info(f"SSH tunnel established: localhost:{self.local_port} → {self.server_ip}:{self.remote_port}")
         except Exception as e:
-            print(f"{msg_error} Failed to start SSH tunnel or run command: {e}")
+            logger.error(f"Failed to start SSH tunnel or run command: {e}")
             sys.exit(1)
 
     def stop_tunnel(self):
         if self.tunnel and self.tunnel.is_active:
             self.tunnel.stop()
-            print(f"{msg_warning} ssh tunnel closed")
+            logger.warning("SSH tunnel closed.")
         else:
-            print(f"{msg_warning} no active ssh tunnel to close")
+            logger.warning("No active SSH tunnel to close.")
 
-    def main(self): # edição futura
+    def main(self):
         try:
             self.start_tunnel()
-            print(f"{msg_ok} connection established and ready")
-
+            logger.info("Connection established and ready.")
         except KeyboardInterrupt:
-            print("\noperation interrupted by user")
-
+            logger.warning("Operation interrupted by user.")
         except Exception as e:
-            print(f"{msg_error} fatal error during ssh operation: {e}")
+            logger.critical(f"Fatal error during SSH operation: {e}")
         finally:
             self.stop_tunnel()
 
 if __name__ == "__main__":
     load_dotenv(dotenv_path="venv/credentials.env")
-    SERVER_IP = os.getenv("SSH_SERVER_IP")
-    USER = os.getenv("SSH_USER")
-    PASSWORD = os.getenv("SSH_PASSWORD")
-    REMOTE_PORT = int(os.getenv("REMOTE_PORT", 1883))
-    LOCAL_PORT = int(os.getenv("LOCAL_PORT", 1883))
 
-    print(f"{msg_info} server IP:", SERVER_IP)
-    print(f"{msg_info} user:", USER)
-    print(f"{msg_info} password:", PASSWORD)
-    print(f"{msg_info} remote port:", REMOTE_PORT)
-    print(f"{msg_info} local port:", LOCAL_PORT)
-    
+    server_ip = os.getenv("SSH_SERVER_IP")
+    user = os.getenv("SSH_USER")
+    password = os.getenv("SSH_PASSWORD")
+    remote_port = int(os.getenv("REMOTE_PORT", 1883))
+    local_port = int(os.getenv("LOCAL_PORT", 1883))
+
+    logger.info(f"server IP: {server_ip}")
+    logger.info(f"user: {user}")
+    logger.info(f"password: {'*' * len(password) if password else 'None'}")
+    logger.info(f"remote Port: {remote_port}")
+    logger.info(f"local Port: {local_port}")
+
     connection = SSH_Connection(
-        server_ip=SERVER_IP,
-        ssh_user=USER,
-        ssh_password=PASSWORD,
-        remote_port=REMOTE_PORT,
-        local_port=LOCAL_PORT
+        server_ip=server_ip,
+        ssh_user=user,
+        ssh_password=password,
+        remote_port=remote_port,
+        local_port=local_port
     )
     connection.main()

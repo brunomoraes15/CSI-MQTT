@@ -3,3 +3,4 @@ pandas
 paramiko<3.0
 sshtunnel
 python-dotenv
+colorlog
