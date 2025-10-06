@@ -20,7 +20,8 @@ Projeto em Python para transmissão de dados de sensores via Raspberry Pi usando
 
 ```bash
 git clone https://github.com/brunomoraes15/CSI-MQTT.git
-cd CSI-MQTT.git```
+cd CSI-MQTT.git
+```
 
 2. Crie um ambiente virtual para instalar as dependências do Python:
 
