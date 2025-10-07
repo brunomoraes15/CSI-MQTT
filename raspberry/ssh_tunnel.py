@@ -1,8 +1,8 @@
 from sshtunnel import SSHTunnelForwarder
-from dotenv import load_dotenv
 import paramiko
 import time, sys, os
 from general.logging import logger
+import subprocess
 
 
 class SSH_Connection:
@@ -15,6 +15,7 @@ class SSH_Connection:
         self.default_port = 22
         self.tunnel = None
         self.client = None
+        self.input = None
 
     def start_tunnel(self):
         try:
@@ -47,60 +48,36 @@ class SSH_Connection:
             logger.warning("SSH tunnel closed.")
         else:
             logger.warning("No active SSH tunnel to close.")
-
-    def run_command(self, command="hostnamectl"):
-        """Executa um comando remoto via SSH (requer conexão ativa)."""
-        if not self.client:
-            logger.error("No active SSH session. Cannot execute command.")
-            return
-
+    #debug
+    def run_local_command(self, command):
         try:
-            logger.info(f"Executing '{command}' on {self.server_ip}...")
+            process = subprocess.Popen(command, shell=True)
+            process.wait()
+        except Exception as e:
+            logger.error(f"Error while executing '{command}': {e}")
+    #debug
+    def run_remote_command(self, command):
+        
+        if not self.client:
+            logger.error("no active SSH session thus cannot execute command")
+            return
+        try:
             stdin, stdout, stderr = self.client.exec_command(command)
-            output = stdout.read().decode().strip()
-            error = stderr.read().decode().strip()
-
-            if output:
-                logger.info(f"Command output:\n{output}")
-            if error:
-                logger.error(f"Command error:\n{error}")
-
         except Exception as e:
             logger.error(f"Error while executing '{command}': {e}")
 
-    def main(self):
+    def execution_debug(self):
         try:
             self.start_tunnel()
             logger.info("Connection established and ready.")
-            self.run_command("hostnamectl")
+            while (self.client or self.tunnel):
+                self.input = input("> ")
+                self.run_local_command(self.input)
         except KeyboardInterrupt:
             logger.warning("Operation interrupted by user.")
         except Exception as e:
             logger.critical(f"Fatal error during SSH operation: {e}")
-        finally:
-            self.stop_tunnel()
+        #finally:
+            #self.stop_tunnel()
 
 
-if __name__ == "__main__":
-    load_dotenv(dotenv_path="venv/credentials.env")
-
-    server_ip = os.getenv("SSH_SERVER_IP")
-    user = os.getenv("SSH_USER")
-    password = os.getenv("SSH_PASSWORD")
-    remote_port = int(os.getenv("REMOTE_PORT", 1883))
-    local_port = int(os.getenv("LOCAL_PORT", 1883))
-
-    logger.info(f"server IP: {server_ip}")
-    logger.info(f"user: {user}")
-    logger.info(f"password: {'*' * len(password) if password else 'None'}")
-    logger.info(f"remote Port: {remote_port}")
-    logger.info(f"local Port: {local_port}")
-
-    connection = SSH_Connection(
-        server_ip=server_ip,
-        ssh_user=user,
-        ssh_password=password,
-        remote_port=remote_port,
-        local_port=local_port
-    )
-    connection.main()
