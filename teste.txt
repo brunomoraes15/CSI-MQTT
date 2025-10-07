@@ -1,1 +1,3 @@
 scp /home/orpheu/CSI-MQTT/teste.txt csi@10.20.241.10:/COLETA-TESTE && lablairleds
+
+/home/orpheu/ESP_Esteira_Teste

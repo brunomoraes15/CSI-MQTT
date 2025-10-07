@@ -28,12 +28,14 @@ class SSH_Connection:
             )
             self.tunnel.start()
             logger.info(f"SSH tunnel established: localhost:{self.local_port} → {self.server_ip}:{self.remote_port}")
+            
 
         
             self.client = paramiko.SSHClient()
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.client.connect(self.server_ip, username=self.ssh_user, password=self.ssh_password)
             logger.info("SSH client connected successfully.")
+            return self.tunnel.local_bind_port
 
         except Exception as e:
             logger.error(f"Failed to start SSH tunnel or client: {e}")
