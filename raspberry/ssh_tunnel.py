@@ -48,11 +48,6 @@ class SSH_Connection:
         else:
             logger.warning("No active SSH tunnel to close.")
 
-    def run_command(self, command="hostnamectl"):
-        """Executa um comando remoto via SSH (requer conexão ativa)."""
-        if not self.client:
-            logger.error("No active SSH session. Cannot execute command.")
-            return
 
         try:
             logger.info(f"Executing '{command}' on {self.server_ip}...")
@@ -85,7 +80,7 @@ if __name__ == "__main__":
     load_dotenv(dotenv_path="venv/credentials.env")
 
     server_ip = os.getenv("SSH_SERVER_IP")
-    user = os.getenv("SSH_USER")
+    user = os.getenv("USER")
     password = os.getenv("SSH_PASSWORD")
     remote_port = int(os.getenv("REMOTE_PORT", 1883))
     local_port = int(os.getenv("LOCAL_PORT", 1883))
