@@ -23,8 +23,8 @@ logger.info(f"remote port: {remote_port}")
 logger.info(f"topic: {topic}")
 logger.info(f"csv path: {csv_dir}")
 
-if __name__ == "__main__":
-    publisher = MQTT_Publish(
+
+publisher = MQTT_Publish(
         client_id=client_id,
         server_ip=server_ip,
         port=remote_port,
@@ -33,13 +33,13 @@ if __name__ == "__main__":
         topic=topic,
     )
 
-    publisher.connect()
+publisher.connect()
 
-    try:
-        while True:
-            publisher.data_publish(csv_dir)
+try:
+    while True:
+        publisher.data_publish(csv_dir)
 
-    except KeyboardInterrupt:
+except KeyboardInterrupt:
         logger.info(" Stopping CSV sender")
-    finally:
-        publisher.disconnect()
+finally:
+    publisher.disconnect()
