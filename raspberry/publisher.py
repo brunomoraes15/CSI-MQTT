@@ -39,9 +39,9 @@ class MQTT_Publish:
                 
                 csv_files = sorted([f for f in os.listdir(dir_path) if f.lower().endswith(".csv")])
 
-                if not csv_files:
-                    logger.warning("No CSV")
-                    return
+               # if not csv_files:
+               #     logger.warning("No CSV")
+               #     return
                 
                 for filename in csv_files:
                     file_path = os.path.join(dir_path, filename)
@@ -71,7 +71,7 @@ class MQTT_Publish:
                         logger.exception(f"Error while parsing csv")
 
             except Exception as e:
-                logger.exception(f"Unexpected error while publishing data to server {server_ip}: {e}")
+                logger.exception(f"Unexpected error while publishing data to server {self.server_ip}: {e}")
     
     def disconnect(self):
         self.client.loop_stop()
@@ -80,52 +80,3 @@ class MQTT_Publish:
 
 
 
-import os
-import time
-from dotenv import load_dotenv
-from general.logging import logger
-
-
-load_dotenv(dotenv_path="venv/credentials.env")
-
-server_ip = os.getenv("SERVER_IP")
-#username = os.getenv("USERNAME")
-password = os.getenv("PASSWORD")
-remote_port = int(os.getenv("REMOTE_PORT", 1884))
-topic = os.getenv("TOPIC")
-client_id = os.getenv("CLIENT_ID")
-#csv_path = os.getenv("CSV_PATH", "ESP_Esteira_Teste/004-01.csv")
-interval = int(os.getenv("SEND_INTERVAL", 1))  #
-
-username = "csi"
-
-logger.info(f"server IP: {server_ip}")
-logger.info(f"client ID: {client_id}")
-logger.info(f"username: {username or username}")
-logger.info(f"password: {'*' * len(password) if password else 'None'}")
-logger.info(f"remote port: {remote_port}")
-logger.info(f"topic: {topic}")
-#logger.info(f"csv path: {csv_path}")
-logger.info(f"send interval: {interval}s")
-
-if __name__ == "__main__":
-    publisher = MQTT_Publish(
-        client_id=client_id,
-        server_ip=server_ip,
-        port=remote_port,
-        username=username,
-        password=password,
-        topic=topic,
-    )
-
-    publisher.connect()
-
-    try:
-        while True:
-            publisher.data_publish("path")
-            time.sleep(interval)
-
-    except KeyboardInterrupt:
-        logger.info(" Stopping CSV sender...")
-    finally:
-        publisher.disconnect()
