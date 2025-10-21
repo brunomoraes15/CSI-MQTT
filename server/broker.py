@@ -20,7 +20,7 @@ class MQTT_Broker:
         self.client.on_message = self._on_message
         self.client.on_disconnect = self._on_disconnect
 
-    def _on_connect(self, client, userdata, flags, rc):
+    def _on_connect(self, client, rc):
         if rc == 0:
             logger.info(f"Connected to MQTT broker at {self.broker_ip}:{self.broker_port}")
             client.subscribe(self.topic)
@@ -28,7 +28,7 @@ class MQTT_Broker:
         else:
             logger.error(f"Failed to connect. Return code: {rc}")
 
-    def _on_message(self, client, userdata, msg):
+    def _on_message(self, msg):
         try:
             payload = json.loads(msg.payload.decode())
             filename = payload.get("filename", f"data_{int(time.time())}.csv")
@@ -40,7 +40,7 @@ class MQTT_Broker:
         except Exception as e:
             logger.exception(f"Error processing message: {e}")
 
-    def _on_disconnect(self, client, userdata, rc):
+    def _on_disconnect(self, rc):
         if rc != 0:
             logger.warning("Unexpected disconnection")
             self._reconnect()

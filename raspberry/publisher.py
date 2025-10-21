@@ -3,19 +3,16 @@ from paho.mqtt import client as mqtt
 from general.logging import logger
 
 class MQTT_Publish:
-    def __init__(self, client_id, server_ip, port, username=None, password=None, topic=None):
+    def __init__(self, client_id, server_ip, port, topic=None):
         self.client = mqtt.Client(
             client_id=client_id,
             callback_api_version=mqtt.CallbackAPIVersion.VERSION1
         )
-        self.topic = topic
-        self.client.username_pw_set(username, password)
-
-        self.client.on_connect = self.on_connect
+        self.topic                = topic
+        self.client.on_connect    = self.on_connect
         self.client.on_disconnect = self.on_disconnect
-
-        self.server_ip = server_ip
-        self.port = port
+        self.server_ip            = server_ip
+        self.port                 = port
         
     def on_connect(self, client, userdata, flags, rc):
             if rc == 0:
@@ -27,7 +24,7 @@ class MQTT_Publish:
             logger.warning(f" Disconnected from MQTT broker. Code: {rc}")
 
     def connect(self):
-            logger.info(f"Connecting to {self.server_ip}:{self.port} ...")
+            logger.info(f"Connecting to {self.server_ip}:{self.port}")
             self.client.connect(self.server_ip, self.port, keepalive=60)
             self.client.loop_start()
 
